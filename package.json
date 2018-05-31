@@ -1,0 +1,25 @@
+{
+  "name": "ide",
+  "version": "1.0.0",
+  "description": "IDE for building flow based programs like AI",
+  "main": "index.js",
+  "dependencies": {
+    "electron": "^2.0.2"
+  },
+  "devDependencies": {
+    "electron": "^2.0.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/syntropy-ai/ide.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/syntropy-ai/ide/issues"
+  },
+  "homepage": "https://github.com/syntropy-ai/ide#readme"
+}
