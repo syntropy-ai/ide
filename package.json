@@ -2,7 +2,7 @@
   "name": "ide",
   "version": "1.0.0",
   "description": "IDE for building flow based programs like AI",
-  "main": "index.js",
+  "main": "main.js",
   "dependencies": {
     "electron": "^2.0.2"
   },
