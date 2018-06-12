@@ -19,7 +19,8 @@ const buildIterator = (runner, runFunc) => state => {
 const buildLayer = layerDef => {  
   var runFunc
   if(layerDef.file){
-    const fileText = fs.readFileSync(path.join(experimentPath, layerDef.file), 'utf8')    
+    const fileText = fs.readFileSync(path.join(experimentPath, layerDef.file), 'utf8')
+    fileText += `\n//# sourceURL=${layerDef.file}`
     runFunc = new Function('state', fileText)
   }
   
