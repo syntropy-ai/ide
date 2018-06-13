@@ -20,7 +20,7 @@ const buildLayer = layerDef => {
   var runFunc
   if(layerDef.file){
     var fileText = fs.readFileSync(path.join(experimentPath, layerDef.file), 'utf8')
-    fileText += `\n//# sourceURL=${layerDef.file}`
+    fileText += `\n//# sourceURL=layer/${layerDef.file}`
     runFunc = new Function('state', fileText)
   }
   
