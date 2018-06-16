@@ -9,43 +9,71 @@ const experimentPath = path.dirname(args[2])
 
 const state = {}
 
-const buildIterator = (runner, runFunc) => state => {
-  if(runFunc){ runFunc(state) }
-  runner.forEach(f => f.run(state))
-  state.iteratorIndex++
-  return state.iteratorIndex < 100
+const parseCode = str => {
+  //return new Function('state', str)
+  var GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor
+  return new GeneratorFunction('state', str)
 }
 
-const buildLayer = layerDef => {  
-  var runFunc
+const buildLayer = layerDef => {
+
+  const layer = {
+    def: layerDef
+  }
+
   if(layerDef.file){
-    var fileText = fs.readFileSync(path.join(experimentPath, layerDef.file), 'utf8')
-    fileText += `\n//# sourceURL=layer/${layerDef.file}`
-    runFunc = new Function('state', fileText)
-  }
-  
-  if(layerDef.type === 'iterator'){
-    const iterRunner = layerDef.layers.map(buildLayer)    
-    runFunc = buildIterator(iterRunner, runFunc)
+    code = fs.readFileSync(path.join(experimentPath, layerDef.file), 'utf8')
+    code += `\n//# sourceURL=layer/${layerDef.file}`
+    layer.generator = parseCode(code)
   }
 
-  return {
-    def: layerDef,
-    run: runFunc
-  } 
+  if(layerDef.children){
+    layer.childProgram = buildProgram(layerDef.children)
+  }
+
+  return layer
 }
 
-const runner = def.layers.map(buildLayer)
+const buildProgram = layers => {
+  return {
+    layerIndex: 0,
+    layers: layers.map(buildLayer)
+  }
+}
 
-state.iteratorIndex = 0
-var doneIndex = 0
-while(doneIndex < runner.length){
-  for(; doneIndex<runner.length; doneIndex++){
-    // if layer returns truthy it means to stop doing regular processing here
-    if(runner[doneIndex].run(state)){
+const layerPass = layer => {
+  if(!layer.run){
+    layer.run = layer.generator(state)
+  }
+
+  // run the next layer iteration
+  const result = layer.run.next()
+
+  return result.done
+}
+
+const render = timeStamp => {
+  const pp = document.getElementById('txt')
+  pp.textContent = 'Actually Rendering: ' + timeStamp
+  console.log('rendering')
+}
+
+const programPass = timeStamp => {
+  const { layers } = program
+  while(program.layerIndex < layers.length){
+    if(layerPass(layers[program.layerIndex])){
+      program.layerIndex++
+    }else{
       break
     }
   }
+  render(timeStamp)
+  if(program.layerIndex < layers.length){
+    requestAnimationFrame(programPass)
+  }  
 }
+
+const program = buildProgram(def.layers)
+requestAnimationFrame(programPass)
 
 console.log('complete')
