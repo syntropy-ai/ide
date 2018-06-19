@@ -4,7 +4,8 @@
   "description": "IDE for building flow based programs like AI",
   "main": "main.js",
   "dependencies": {
-    "electron": "^2.0.2"
+    "electron": "^2.0.2",
+    "sane": "^2.5.2"
   },
   "devDependencies": {
     "electron": "^2.0.2"
