@@ -111,8 +111,6 @@ const layerPass = layer => {
   return result.done
 }
 
-const rendererInit = fn => fn({ state, })
-
 const render = timeStamp => {
   const { renderers } = program
   renderers.forEach(r => {
@@ -124,31 +122,40 @@ const render = timeStamp => {
 }
 
 const programPass = timeStamp => {
-  const { layers, fps, forever } = program
-
-  while(program.layerIndex < layers.length){
-    if(layerPass(layers[program.layerIndex])){
-      program.layerIndex++
-    }else{
-      break
-    }
-  }
+  const { layers, fps, forever, playing } = program
 
   // work out how much work to do keep approximate
-  // desired framerate
+  // desired framerate    
   const waitUntilRender = program.lastTimeRendered + ((1 / fps) * 1000)
-  timeStamp = Date.now()
+  var stop = false
+  var timeStamp    
+  do{
+    while(program.layerIndex < layers.length){
+      if(layerPass(layers[program.layerIndex])){
+        program.layerIndex++
+      }else{
+        break
+      }
+    }
+    
+    if(program.layerIndex >= layers.length){
+      if(forever){
+        program.layerIndex = 0
+      }else{
+        break
+      }
+    }    
 
-  // render
-  if(timeStamp >= waitUntilRender){
-    render(timeStamp)
-    program.lastTimeRendered = timeStamp
-  }  
+    timeStamp = Date.now()    
+  }while(timeStamp < waitUntilRender)
+  
+  // render when enough work has been done  
+  render(timeStamp)
+  program.lastTimeRendered = timeStamp     
 
   // if program is not done or forever is on restart
-  if(forever || program.layerIndex < layers.length){
-    if(program.layerIndex >= layers.length){ program.layerIndex = 0 }
-    requestAnimationFrame(programPass)
+  if(playing && (forever || program.layerIndex < layers.length)){  
+    requestAnimationFrame(programPass)    
   }
 }
 
@@ -164,6 +171,8 @@ const load = config => {
 
   if(config.renderers){
     program.renderers = config.renderers.map(buildRenderer)
+  }else{
+    program.renderers = []
   }
 
   return program
@@ -174,8 +183,13 @@ const play = () => {
   requestAnimationFrame(programPass)
 }
 
+const stop = () => {
+  program.playing = false
+}
+
 const program = load(def)
 play()
+//setTimeout(() => { stop() }, 5000)
 
 // start file watching
 var watcher = sane(experimentPath, { glob: ['**/*.js'] })
