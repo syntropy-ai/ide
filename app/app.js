@@ -86,7 +86,7 @@ const buildRenderer = rendererDef => {
 
   if(rendererDef.code){
     const source = sourceString(`renderers/${rendererDef.id}/code`)
-    renderer.code = parseFunction(getString(rendererDef.code) + source, ['state', 'domParent', 'init', ''])
+    renderer.code = parseFunction(getString(rendererDef.code) + source, ['state', 'domParent', 'init', 'onResize'])
   }
 
   return renderer
@@ -115,7 +115,12 @@ const render = timeStamp => {
   const { renderers } = program
   renderers.forEach(r => {
     const domParent = r.containerElement
-    r.code(state, domParent, r.hasCompleted ? noop : (fn) => fn({ state, domParent }))
+    r.code(
+      state, 
+      domParent, 
+      r.hasCompleted ? noop : fn => fn(),
+      fn => { r.onResize = fn }
+    )
     r.hasCompleted = true
   })
   program.timeLastRendered = Date.now()
@@ -176,6 +181,14 @@ const load = config => {
   }
 
   return program
+}
+
+window.onresize = () => {
+  program.renderers.forEach(r => {
+    if(r.onResize){
+      r.onResize()
+    }
+  })
 }
 
 const play = () => {
