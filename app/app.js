@@ -31,7 +31,7 @@ const parseHTML = str => {
 }
 
 const sourceString = label => {
-  return `\n//# sourceURL=layer/${label}`
+  return `\n//# sourceURL=ide://${label}`
 }
 
 // Convert a config object to a string.
@@ -220,3 +220,5 @@ watcher.on('change', function (filepath, root, stat) {
     }
   }
 })
+
+//# sourceURL=ide://app/app.js
